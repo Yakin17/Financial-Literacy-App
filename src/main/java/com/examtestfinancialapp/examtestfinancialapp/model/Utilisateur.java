@@ -12,7 +12,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "utilisateurs")
+@Table(name = "utilisateurs",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "username"),
+                @UniqueConstraint(columnNames = "email")
+        }   )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +30,10 @@ public class Utilisateur {
     @Size(max = 100)
     private String nom;
 
+    @NotBlank
+    @Size(min = 3, max = 20)
+    private String username;
+
 
     @NotBlank
     @Email
@@ -36,6 +44,9 @@ public class Utilisateur {
     @NotBlank
     @Size(max = 255)
     private String motDePasse;
+
+    @Column(length = 20)
+    private String role = "ROLE_USER";
 
     @Column(name = "date_creation")
     private LocalDateTime dateCreation;
@@ -49,6 +60,18 @@ public class Utilisateur {
     @PrePersist
     protected void onCreate() {
         dateCreation = LocalDateTime.now();
+    }
+
+    public Utilisateur(String username, String nom, String email, String motDePasse) {
+        this.username = username;
+        this.nom = nom;
+        this.email = email;
+        this.motDePasse = motDePasse;
+        this.role = "ROLE_USER"; // Par défaut, tous les nouveaux utilisateurs ont le rôle USER
+    }
+
+    public boolean isAdmin() {
+        return "ROLE_ADMIN".equals(this.role);
     }
 
 }

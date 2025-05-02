@@ -4,10 +4,6 @@ package com.examtestfinancialapp.examtestfinancialapp.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,16 +12,10 @@ import java.time.LocalDateTime;
 public class UtilisateurDTO {
 
     private Long id;
-
-    @NotBlank(message = "Le nom est obligatoire")
-    @Size(max = 100, message = "Le nom ne doit pas dépasser 100 caractères")
     private String nom;
-
-    @NotBlank(message = "L'email est obligatoire")
-    @Email(message = "Format d'email invalide")
-    @Size(max = 150, message = "L'email ne doit pas dépasser 150 caractères")
+    private String username;
     private String email;
-
+    private String role;
     private LocalDateTime dateCreation;
 
 }

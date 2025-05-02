@@ -15,6 +15,7 @@ public class UserDetailsImpl implements UserDetails {
 
     private Long id;
     private String username;
+    private String nom;
     private String email;
 
     @JsonIgnore
@@ -22,21 +23,24 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String email, String password,
+    public UserDetailsImpl(Long id, String username, String nom, String email, String password,
             Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
+        this.nom = nom;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
     }
 
     public static UserDetailsImpl build(Utilisateur utilisateur) {
-        // Par défaut, tous les utilisateurs ont le rôle USER
-        Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        // Créer une autorité à partir du rôle
+        Collection<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority(utilisateur.getRole()));
 
         return new UserDetailsImpl(
                 utilisateur.getId(),
+                utilisateur.getUsername(),
                 utilisateur.getNom(),
                 utilisateur.getEmail(),
                 utilisateur.getMotDePasse(),
@@ -61,6 +65,10 @@ public class UserDetailsImpl implements UserDetails {
         return password;
     }
 
+    public String getNom() {
+        return nom;
+    }
+    
     @Override
     public String getUsername() {
         return username;
