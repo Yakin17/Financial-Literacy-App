@@ -7,6 +7,10 @@ import com.examtestfinancialapp.examtestfinancialapp.model.Utilisateur;
 import com.examtestfinancialapp.examtestfinancialapp.repository.ArticleRepository;
 import com.examtestfinancialapp.examtestfinancialapp.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,25 +24,48 @@ public class ArticleService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
+    // Méthode pour vérifier si l'utilisateur connecté est admin
+    private void verifierSiAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication != null &&
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            throw new AccessDeniedException("Seuls les administrateurs peuvent accéder à cette ressource");
+        }
+    }
+
     public List<ArticleDTO> getAllArticles() {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         return articleRepository.findAllByOrderByDatePublicationDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public ArticleDTO getArticleById(Long id) {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article non trouvé avec l'ID : " + id));
         return convertToDTO(article);
     }
 
     public List<ArticleDTO> getArticlesByAuteurId(Long auteurId) {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         return articleRepository.findByAuteurId(auteurId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public ArticleDTO createArticle(ArticleDTO articleDTO) {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         Utilisateur auteur = utilisateurRepository.findById(articleDTO.getAuteurId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Utilisateur non trouvé avec l'ID : " + articleDTO.getAuteurId()));
@@ -52,6 +79,9 @@ public class ArticleService {
     }
 
     public ArticleDTO updateArticle(Long id, ArticleDTO articleDTO) {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article non trouvé avec l'ID : " + id));
 
@@ -70,6 +100,9 @@ public class ArticleService {
     }
 
     public void deleteArticle(Long id) {
+        // Vérifier les droits d'administration
+        verifierSiAdmin();
+
         if (!articleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Article non trouvé avec l'ID : " + id);
         }
@@ -86,7 +119,4 @@ public class ArticleService {
         articleDTO.setAuteurNom(article.getAuteur().getNom());
         return articleDTO;
     }
-
-
-
 }

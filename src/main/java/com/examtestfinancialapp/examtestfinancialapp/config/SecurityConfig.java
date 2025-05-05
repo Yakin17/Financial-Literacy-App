@@ -78,8 +78,9 @@ public class SecurityConfig {
                                             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
                             return new AuthorizationDecision(isAuthorized);
                         })
-                        .requestMatchers("/api/articles/publiques").permitAll()
-                        .requestMatchers("/api/articles/**").authenticated()
+                        // Modifier les règles d'accès pour les articles
+                        .requestMatchers("/api/articles/**").hasAuthority("ROLE_ADMIN")
+                        // Maintenir les autres règles inchangées
                         .requestMatchers("/api/quiz/publiques").permitAll()
                         .requestMatchers("/api/quiz/**").authenticated()
                         .anyRequest().authenticated());
