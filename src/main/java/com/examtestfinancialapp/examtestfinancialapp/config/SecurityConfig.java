@@ -79,7 +79,12 @@ public class SecurityConfig {
                             return new AuthorizationDecision(isAuthorized);
                         })
                         // Modifier les règles d'accès pour les articles
-                        .requestMatchers("/api/articles/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/articles/**").authenticated() // Tous les utilisateurs
+                                                                                             // authentifiés peuvent
+                                                                                             // voir les articles
+                        .requestMatchers(HttpMethod.POST, "/api/articles/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/articles/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/articles/**").hasAuthority("ROLE_ADMIN")
                         // Maintenir les autres règles inchangées
                         .requestMatchers("/api/quiz/publiques").permitAll()
                         .requestMatchers("/api/quiz/**").authenticated()

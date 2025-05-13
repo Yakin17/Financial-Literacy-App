@@ -22,19 +22,16 @@ public class ArticleController {
     private ArticleService articleService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<ArticleDTO>> getAllArticles() {
         return ResponseEntity.ok(articleService.getAllArticles());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ArticleDTO> getArticleById(@PathVariable Long id) {
         return ResponseEntity.ok(articleService.getArticleById(id));
     }
 
     @GetMapping("/auteur/{auteurId}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<ArticleDTO>> getArticlesByAuteurId(@PathVariable Long auteurId) {
         return ResponseEntity.ok(articleService.getArticlesByAuteurId(auteurId));
     }

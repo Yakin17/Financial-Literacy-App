@@ -25,38 +25,32 @@ public class ArticleService {
     private UtilisateurRepository utilisateurRepository;
 
     // Méthode pour vérifier si l'utilisateur connecté est admin
-    private void verifierSiAdmin() {
+    private boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication != null &&
+        return authentication != null &&
                 authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 
-        if (!isAdmin) {
+    // Méthode pour vérifier si l'utilisateur connecté est admin
+    private void verifierSiAdmin() {
+        if (!isAdmin()) {
             throw new AccessDeniedException("Seuls les administrateurs peuvent accéder à cette ressource");
         }
     }
 
     public List<ArticleDTO> getAllArticles() {
-        // Vérifier les droits d'administration
-        verifierSiAdmin();
-
         return articleRepository.findAllByOrderByDatePublicationDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public ArticleDTO getArticleById(Long id) {
-        // Vérifier les droits d'administration
-        verifierSiAdmin();
-
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Article non trouvé avec l'ID : " + id));
         return convertToDTO(article);
     }
 
     public List<ArticleDTO> getArticlesByAuteurId(Long auteurId) {
-        // Vérifier les droits d'administration
-        verifierSiAdmin();
-
         return articleRepository.findByAuteurId(auteurId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
