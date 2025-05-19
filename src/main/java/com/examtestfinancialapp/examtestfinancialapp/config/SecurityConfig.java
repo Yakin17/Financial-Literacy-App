@@ -66,11 +66,26 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // Routes d'authentification publiques
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Documentation Swagger publique
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Permettre la création d'utilisateurs
                         .requestMatchers(HttpMethod.POST, "/api/utilisateurs").permitAll()
+
+                        // MODIFICATION : Rendre toutes les routes de scores publiques
+                        .requestMatchers("/api/scores/**").permitAll()
+
+                        // MODIFICATION : Rendre les quiz publics (GET et PUT)
+                        .requestMatchers(HttpMethod.GET, "/api/quizzes/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/quizzes/**").permitAll()
+
+                        // Accès admin
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/utilisateurs").hasAuthority("ROLE_ADMIN")
+
+                        // Accès utilisateur à son propre profil
                         .requestMatchers("/api/utilisateurs/{id}").access((authentication, object) -> {
                             Long requestedId = Long.parseLong(object.getVariables().get("id").toString());
                             boolean isAuthorized = authentication.get().getName().equals(requestedId.toString()) ||
@@ -78,16 +93,21 @@ public class SecurityConfig {
                                             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
                             return new AuthorizationDecision(isAuthorized);
                         })
-                        // Modifier les règles d'accès pour les articles
-                        .requestMatchers(HttpMethod.GET, "/api/articles/**").authenticated() // Tous les utilisateurs
-                                                                                             // authentifiés peuvent
-                                                                                             // voir les articles
+
+                        // Règles pour les articles
+                        .requestMatchers(HttpMethod.GET, "/api/articles/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/articles/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/articles/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/articles/**").hasAuthority("ROLE_ADMIN")
-                        // Maintenir les autres règles inchangées
+
+                        // Le point API des quiz publiques (par souci de compatibilité)
                         .requestMatchers("/api/quiz/publiques").permitAll()
-                        .requestMatchers("/api/quiz/**").authenticated()
+
+                        // Autres routes de quiz qui ne sont pas GET ou PUT
+                        .requestMatchers(HttpMethod.POST, "/api/quizzes/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/quizzes/**").hasAuthority("ROLE_ADMIN")
+
+                        // Routes restantes nécessitent authentification
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

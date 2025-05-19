@@ -6,6 +6,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
+
 @Configuration
 public class CorsConfig {
     @Bean
@@ -13,20 +15,21 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("*");
+        // Au lieu de "*", spécifiez les origines autorisées
+        // Pour un environnement de production, vous devriez limiter ceci
+        config.setAllowedOriginPatterns(Arrays.asList("*"));
 
-        config.addAllowedHeader("*");
+        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
 
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("OPTIONS");
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        config.setAllowCredentials(true);
+        // Attention: setAllowCredentials(true) ne fonctionne pas avec
+        // allowedOrigin("*")
+        // Pour un vrai environnement public, définissez cette valeur à false ou
+        // spécifiez des origines précises
+        config.setAllowCredentials(false);
 
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/api/scores/**", config);
         return new CorsFilter(source);
     }
-
 }
