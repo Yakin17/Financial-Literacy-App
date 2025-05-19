@@ -1,6 +1,5 @@
 package com.examtestfinancialapp.examtestfinancialapp.service;
 
-
 import com.examtestfinancialapp.examtestfinancialapp.dto.ScoreDTO;
 import com.examtestfinancialapp.examtestfinancialapp.exception.ResourceNotFoundException;
 import com.examtestfinancialapp.examtestfinancialapp.model.Quiz;
@@ -34,13 +33,11 @@ public class ScoreService {
                 .collect(Collectors.toList());
     }
 
-
     public ScoreDTO getScoreById(Long id) {
         Score score = scoreRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Score non trouvé avec l'ID : " + id));
         return convertToDTO(score);
     }
-
 
     public List<ScoreDTO> getScoresByUtilisateurId(Long utilisateurId) {
         return scoreRepository.findByUtilisateurId(utilisateurId).stream()
@@ -53,7 +50,6 @@ public class ScoreService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-
 
     public ScoreDTO createOrUpdateScore(ScoreDTO scoreDTO) {
         Utilisateur utilisateur = utilisateurRepository.findById(scoreDTO.getUtilisateurId())
@@ -91,6 +87,35 @@ public class ScoreService {
         scoreRepository.deleteById(id);
     }
 
+    /**
+     * Vérifie si un utilisateur a déjà passé un quiz spécifique
+     * 
+     * @param utilisateurId ID de l'utilisateur
+     * @param quizId        ID du quiz
+     * @return true si l'utilisateur a déjà passé le quiz, false sinon
+     */
+    public boolean hasUserCompletedQuiz(Long utilisateurId, Long quizId) {
+        Optional<Score> score = scoreRepository.findByUtilisateurIdAndQuizId(utilisateurId, quizId);
+        return score.isPresent();
+    }
+
+    /**
+     * Enregistre le score d'un utilisateur pour un quiz spécifique
+     * 
+     * @param utilisateurId ID de l'utilisateur
+     * @param quizId        ID du quiz
+     * @param pointsObtenus Nombre de points obtenus
+     * @return Le score enregistré
+     */
+    public ScoreDTO saveUserQuizScore(Long utilisateurId, Long quizId, int pointsObtenus) {
+        ScoreDTO scoreDTO = new ScoreDTO();
+        scoreDTO.setUtilisateurId(utilisateurId);
+        scoreDTO.setQuizId(quizId);
+        scoreDTO.setPointsObtenus(pointsObtenus);
+
+        return createOrUpdateScore(scoreDTO);
+    }
+
     private ScoreDTO convertToDTO(Score score) {
         ScoreDTO scoreDTO = new ScoreDTO();
         scoreDTO.setId(score.getId());
@@ -100,10 +125,4 @@ public class ScoreService {
         scoreDTO.setDatePassage(score.getDatePassage());
         return scoreDTO;
     }
-
-
-
-
-
-
 }
