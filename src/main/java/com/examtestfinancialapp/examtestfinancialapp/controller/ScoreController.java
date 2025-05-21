@@ -86,4 +86,5 @@ public class ScoreController {
         ScoreDTO score = scoreService.saveUserQuizScore(utilisateurId, quizId, points);
         return new ResponseEntity<>(score, HttpStatus.CREATED);
     }
-}                                                   
+}                                                  
+

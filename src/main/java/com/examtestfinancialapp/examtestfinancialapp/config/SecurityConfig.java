@@ -73,10 +73,8 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Permettre la création d'utilisateurs
                         .requestMatchers(HttpMethod.POST, "/api/utilisateurs").permitAll()
-
                         // MODIFICATION : Rendre toutes les routes de scores publiques
                         .requestMatchers("/api/scores/**").permitAll()
-
                         // MODIFICATION : Rendre les quiz publics (GET et PUT)
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/quizzes/**").permitAll()
