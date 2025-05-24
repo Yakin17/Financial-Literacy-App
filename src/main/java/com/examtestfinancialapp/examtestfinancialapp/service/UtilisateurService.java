@@ -2,6 +2,7 @@ package com.examtestfinancialapp.examtestfinancialapp.service;
 
 import com.examtestfinancialapp.examtestfinancialapp.dto.UtilisateurCreationDTO;
 import com.examtestfinancialapp.examtestfinancialapp.dto.UtilisateurDTO;
+import com.examtestfinancialapp.examtestfinancialapp.dto.UtilisateurUpdateRequest;
 import com.examtestfinancialapp.examtestfinancialapp.exception.ResourceNotFoundException;
 import com.examtestfinancialapp.examtestfinancialapp.model.Utilisateur;
 import com.examtestfinancialapp.examtestfinancialapp.repository.UtilisateurRepository;
@@ -188,6 +189,40 @@ public class UtilisateurService {
         }
 
         return convertToDTO(utilisateurRepository.save(utilisateur));
+    }
+    public UtilisateurDTO updateUtilisateur(Long id, UtilisateurUpdateRequest updateRequest) {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+
+        // Vérifier l'unicité du username s'il a changé
+        if (!utilisateur.getUsername().equals(updateRequest.getUsername()) && 
+            utilisateurRepository.existsByUsername(updateRequest.getUsername())) {
+            throw new RuntimeException("Ce nom d'utilisateur existe déjà");
+        }
+
+        // Vérifier l'unicité de l'email s'il a changé
+        if (!utilisateur.getEmail().equals(updateRequest.getEmail()) && 
+            utilisateurRepository.existsByEmail(updateRequest.getEmail())) {
+            throw new RuntimeException("Cet email existe déjà");
+        }
+
+        // Mettre à jour les champs
+        utilisateur.setNom(updateRequest.getNom());
+        utilisateur.setUsername(updateRequest.getUsername());
+        utilisateur.setEmail(updateRequest.getEmail());
+
+        // Mettre à jour le mot de passe seulement s'il est fourni
+        if (updateRequest.getMotDePasse() != null && !updateRequest.getMotDePasse().trim().isEmpty()) {
+            utilisateur.setMotDePasse(passwordEncoder.encode(updateRequest.getMotDePasse()));
+        }
+
+        // Mettre à jour le rôle si fourni
+        if (updateRequest.getRole() != null && !updateRequest.getRole().trim().isEmpty()) {
+            utilisateur.setRole(updateRequest.getRole());
+        }
+
+        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+        return convertToDTO(savedUtilisateur);
     }
 
     public void deleteUtilisateur(Long id) {
